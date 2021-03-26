@@ -85,6 +85,7 @@ def find_num():
 
 # записываем ссылки в файл
 print('Найдено страниц: ', find_num())
+all_text = []
 
 # перебираем страницы в поисках ссылок на фирмы с вакансиями и записываем в файл
 for page in range(find_num() + 1):
@@ -94,7 +95,7 @@ for page in range(find_num() + 1):
     b = bs4.BeautifulSoup(s1, "html.parser")
     open_raw.close()
     firm_url_on_page = b.find_all('span', class_='employers-company__description')
-    all_text = []
+
 
     for firm in firm_url_on_page:
         it = firm.find('a')
@@ -102,11 +103,11 @@ for page in range(find_num() + 1):
         print(firm_url)
         all_text.append('https://hh.ru' + it.get('href'))
 
-    with open('obl\data.json', 'a', encoding='utf8') as outfile:
-        str_ = json.dumps(all_text, ensure_ascii=False)
-        outfile.write(str_)
+with open('obl\data.json', 'w', encoding='utf-8') as outfile:
+    str_ = json.dumps(all_text, ensure_ascii=False)
+    outfile.write(str_)
 
-with open('obl\data.json', encoding='utf8') as data_file:
-    data_loaded = json.load(data_file, strict=False)
+with open('obl\data.json', encoding='utf-8') as data_file:
+     data_loaded = json.load(data_file, strict=False)
 
 print(data_loaded)
