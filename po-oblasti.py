@@ -76,38 +76,40 @@ def find_num():
     print(num_f)
     return num_f
 
+def wr_to_file():
+    print('Найдено страниц: ', find_num())
+    all_text = []
 
-# сначала все удаляем в директории
+    # перебираем страницы в поисках ссылок на фирмы с вакансиями и записываем в файл
+    for page in range(find_num() + 1):
+        print(page)
+        open_raw = open(f"obl\index_{page}_raw.html", "r", encoding="utf-8")
+        s1 = open_raw.read()
+        b = bs4.BeautifulSoup(s1, "html.parser")
+        open_raw.close()
+        firm_url_on_page = b.find_all('span', class_='employers-company__description')
+
+        for firm in firm_url_on_page:
+            it = firm.find('a')
+            firm_url = 'https://hh.ru' + it.get('href')
+            print(firm_url)
+            all_text.append('https://hh.ru' + it.get('href'))
+
+    with open('obl\data.json', 'w', encoding='utf-8') as outfile:
+        str_ = json.dumps(all_text, ensure_ascii=False)
+        outfile.write(str_)
+
+# 1 сначала все удаляем в директории
 # del_all_file()
 
-# потом скачиваем страницы со списком фирм с вакансиями
+# 2 потом скачиваем страницы со списком фирм с вакансиями
 # webtofile()
 
-# записываем ссылки в файл
-print('Найдено страниц: ', find_num())
-all_text = []
-
-# перебираем страницы в поисках ссылок на фирмы с вакансиями и записываем в файл
-for page in range(find_num() + 1):
-    print(page)
-    open_raw = open(f"obl\index_{page}_raw.html", "r", encoding="utf-8")
-    s1 = open_raw.read()
-    b = bs4.BeautifulSoup(s1, "html.parser")
-    open_raw.close()
-    firm_url_on_page = b.find_all('span', class_='employers-company__description')
-
-
-    for firm in firm_url_on_page:
-        it = firm.find('a')
-        firm_url = 'https://hh.ru' + it.get('href')
-        print(firm_url)
-        all_text.append('https://hh.ru' + it.get('href'))
-
-with open('obl\data.json', 'w', encoding='utf-8') as outfile:
-    str_ = json.dumps(all_text, ensure_ascii=False)
-    outfile.write(str_)
+# 3 записываем ссылки в файл
+wr_to_file()
 
 with open('obl\data.json', encoding='utf-8') as data_file:
      data_loaded = json.load(data_file, strict=False)
 
 print(data_loaded)
+print(len(data_loaded))
