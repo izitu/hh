@@ -1,11 +1,12 @@
 # запускается ТРЕТЬИМ - разбираем файлы - заливаем в эксель
 # БАГ!!! - ИЗБАВИТЬСЯ ОТ ДУБЛИРОВАНИЯ
 
-import openpyxl, json
+import json
+import openpyxl
 
 
-# проверяем словарь - если есть в словаре стоп слово - вакансию не печатаем
-def dict(name):
+# проверяем словарь - если есть в словаре стоп слово - вакансию не печатаем dict
+def dict_iskl(name):
     stopw = ['АЗС', 'охр', 'Переводчик', 'Лаборант', 'питания', 'Химки', 'Электромонтер', '1С', '1C', 'Битрикс',
              'Механик', 'Электромонтажник', 'Водитель', 'ТРИЗ',
              'логистике', 'технолог', 'продаж', 'Токарь', 'юрист', 'Клиент-менеджер', 'Эксплуатации', 'Оператор',
@@ -79,8 +80,8 @@ for i in range(2, rows + 1):
         pass
 
     for vac in range(0, len(data['items'])):
-        if dict(data['items'][vac]['name']):
-            if (data['items'][vac]['salary']) == None:
+        if dict_iskl(data['items'][vac]['name']):
+            if (data['items'][vac]['salary']) is None:
                 fr = ''
                 to = ''
             else:
@@ -111,18 +112,3 @@ for i in range(2, rows + 1):
             cell2.value = dt
             rowi = rowi + 1
 wb2.save('all-vac.xlsx')
-
-exit(0)
-# загрузить из json
-# with open('4023.api', 'r', encoding='utf-8') as fh:
-#	data = json.load(fh)
-# try:
-#	print(data['items'][0])
-# except:
-#	pass
-# смотрим все апи файлы
-files = os.listdir('.')
-apis = filter(lambda x: x.endswith('.api'), files)
-for api in apis:
-    print(api)
-exit(0)
