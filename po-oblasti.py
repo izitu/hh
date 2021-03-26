@@ -106,7 +106,7 @@ def wr_to_file():
 # webtofile()
 
 # 3 записываем ссылки в файл
-wr_to_file()
+# wr_to_file()
 
 with open('obl\data.json', encoding='utf-8') as data_file:
      data_loaded = json.load(data_file, strict=False)
