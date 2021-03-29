@@ -10,7 +10,7 @@ def apitofile(api):
 			requests.get("https://api.hh.ru/vacancies?employer_id="+api+"&area=1").json())
 		try:
 			print(data['items'][0])
-			with open(api + '.api', 'w', encoding='utf-8') as fh:
+			with open("100bighh/" + api + ".api", "w", encoding="utf-8") as fh:
 				fh.write(
 					json.dumps(data,
 							   ensure_ascii=False))  # преобразовываем словарь data в unicode-строку и записываем в файл
@@ -23,7 +23,7 @@ def apitofile(api):
 		pass
 
 # читаем excel-файл
-wb = openpyxl.load_workbook('firms.xlsx')
+wb = openpyxl.load_workbook("100bighh/firms.xlsx")
 
 # печатаем список листов
 sheets = wb.sheetnames
