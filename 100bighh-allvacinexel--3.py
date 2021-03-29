@@ -7,17 +7,8 @@ import openpyxl
 
 # проверяем словарь - если есть в словаре стоп слово - вакансию не печатаем dict
 def dict_iskl(name):
-    stopw = ['АЗС', 'охр', 'Переводчик', 'Лаборант', 'питания', 'Химки', 'Электромонтер', '1С', '1C', 'Битрикс',
-             'Механик', 'Электромонтажник', 'Водитель', 'ТРИЗ',
-             'логистике', 'технолог', 'продаж', 'Токарь', 'юрист', 'Клиент-менеджер', 'Эксплуатации', 'Оператор',
-             'HRBP', 'документообороту', 'простоя',
-             'Консультант', 'планово-экономического', 'сметной', 'Слесарь', 'делопроизводству', 'РЗА', 'задолженностью',
-             'контроллинга', 'Стажер', 'Бетонщик', 'Кровельщик', 'аудитор', 'Помощник', 'Маляр', 'сметчик',
-             'Мерчендайзер', 'Владимир', 'Финансовый', 'логист', 'Логист', 'Бухгалтер', 'геолог', 'Продавец',
-             'Ассистент', 'ассистент', 'шеф', 'тренер', 'Повар', 'юрисконсульт', 'налогового',
-             'языку', 'водитель', 'Супервайзер', 'персоналу', 'Тамбов', 'Бармен',
-             'сестра', 'Врач', 'котельной', 'юрист', 'Юрист', 'льготам', 'персонала', 'животноводству', 'Агроном',
-             'сельхозтехнике', 'агроном', 'акушер', 'Электромонтёр', 'Ветеринар']
+    with open('stop-dict.json', encoding='utf-8') as data_file:
+        stopw = json.load(data_file, strict=False)
     for w in stopw:
         if name.count(w) != 0:
             return False
@@ -25,7 +16,7 @@ def dict_iskl(name):
 
 
 # читаем excel-файл
-wb = openpyxl.load_workbook('firms.xlsx')
+wb = openpyxl.load_workbook('100bighh/firms.xlsx')
 
 # печатаем список листов
 sheets = wb.sheetnames
@@ -72,7 +63,7 @@ for i in range(2, rows + 1):
     firm_id = str(cell.value)
     print(firm_no, firm_name, firm_id, firm_id + '.api')
     try:
-        with open(firm_id + '.api', 'r', encoding='utf-8') as fh:
+        with open("100bighh/" + firm_id + ".api", "r", encoding="utf-8") as fh:
             data = json.load(fh)
         # print(data)
     except:
@@ -111,4 +102,4 @@ for i in range(2, rows + 1):
             cell2 = sheet2.cell(row=rowi, column=8)
             cell2.value = dt
             rowi = rowi + 1
-wb2.save('all-vac.xlsx')
+wb2.save("100bighh/all-vac.xlsx")
