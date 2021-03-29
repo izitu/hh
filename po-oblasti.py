@@ -121,3 +121,8 @@ with open('obl\data.json', encoding='utf-8') as data_file:
 
 print(data_loaded)
 print(len(data_loaded))
+
+
+exit(0)
+json_file = {'name':["aparna", "pankaj", "sudhir", "Geeku"],'degree': ["MBA", "BCA", "M.Tech", "MBA"],'score':[90, 40, 80, 98]}
+df = pandas.DataFrame(json_file).to_excel("excel.xlsx")
