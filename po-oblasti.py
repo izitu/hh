@@ -7,6 +7,7 @@ import bs4
 import time
 import json
 import os
+import pandas as pd
 
 
 def del_all_file():
@@ -68,11 +69,12 @@ def find_num():
     files = os.listdir(path="obl")
     print(files)
     for fi in files:
-        f = fi.split('_')
-        print(f[1])
-        nu = int(f[1])
-        if num_f < nu:
-            num_f = nu
+        if "_raw.html" in fi:
+            f = fi.split('_')
+            print(f[1])
+            nu = int(f[1])
+            if num_f < nu:
+                num_f = nu
     print(num_f)
     return num_f
 
@@ -82,19 +84,25 @@ def wr_to_file():
 
     # перебираем страницы в поисках ссылок на фирмы с вакансиями и записываем в файл
     for page in range(find_num() + 1):
-        print(page)
+        print(f'Обрабатывается страница {page}')
         open_raw = open(f"obl\index_{page}_raw.html", "r", encoding="utf-8")
         s1 = open_raw.read()
         b = bs4.BeautifulSoup(s1, "html.parser")
         open_raw.close()
-        firm_url_on_page = b.find_all('span', class_='employers-company__description')
+        firm_url_on_page = b.find_all('div', class_='employers-company__item') # span - employers-company__description
 
         for firm in firm_url_on_page:
             it = firm.find('a')
+            firm_vak = firm.find("span", class_="employers-company__vacancies-count").text
             firm_url = 'https://hh.ru' + it.get('href')
-            print(firm_url)
-            all_text.append('https://hh.ru' + it.get('href'))
+            firm_txt = it.text
+            firm_id = it.get('href').split("/")[-1]
+            print(firm_id, firm_txt, firm_url, firm_vak)
+            all_text.append([firm_id, firm_txt, firm_url, firm_vak])
 
+    # закинем знания в эксель
+    alt_p = pd.DataFrame(all_text, columns=("id", "name", "url", "vak"))
+    alt_p.to_excel("obl/al-firm.xls", index=False)
     with open('obl\data.json', 'w', encoding='utf-8') as outfile:
         str_ = json.dumps(all_text, ensure_ascii=False)
         outfile.write(str_)
@@ -106,7 +114,7 @@ def wr_to_file():
 # webtofile()
 
 # 3 записываем ссылки в файл
-# kwr_to_file()
+# wr_to_file()
 
 with open('obl\data.json', encoding='utf-8') as data_file:
      data_loaded = json.load(data_file, strict=False)
