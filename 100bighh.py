@@ -18,7 +18,7 @@ def webtofile_100firm():
 
 	#f_all_row = b.findall(tr)
 	# режим экономии
-	s_to_file = open("100firm_raw.html", "w", encoding="utf-8")
+	s_to_file = open("100bighh/100firm_raw.html", "w", encoding="utf-8")
 	s_to_file.write(str(b))
 	s_to_file.close()
 	print(b)
@@ -26,9 +26,9 @@ def webtofile_100firm():
 
 
 # вызываем функцию скачивания - в идеале она должна всега скачиваться
-# webtofile_100firm()
+webtofile_100firm()
 # читаем из файла
-open_raw = open("100firm_raw.html", "r", encoding="utf-8")
+open_raw = open("100bighh/100firm_raw.html", "r", encoding="utf-8")
 s1 = open_raw.read()
 b=bs4.BeautifulSoup(s1, "html.parser")
 open_raw.close()
@@ -88,10 +88,10 @@ cell.value = 'ПАО «МОЭК»'
 cell = sheet.cell(row=r+1, column=3)
 cell.value = '58138'
 
-wb.save('firms.xlsx')
+wb.save('100bighh/firms.xlsx')
 
 # читаем excel-файл
-wb = openpyxl.load_workbook('firms.xlsx')
+wb = openpyxl.load_workbook('100bighh/firms.xlsx')
 
 # печатаем список листов
 sheets = wb.sheetnames
