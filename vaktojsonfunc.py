@@ -5,6 +5,7 @@ from numpy import random
 from time import sleep
 
 
+# записываем вакансии фирмы в файл
 def api_to_file(save_dir, api):
     try:
         data = (
@@ -22,3 +23,13 @@ def api_to_file(save_dir, api):
             pass
     except:
         pass
+
+
+# проверяем словарь - если есть в словаре стоп слово - вакансию не печатаем dict
+def stop_dict(name):
+    with open('stop-dict.json', encoding='utf-8') as data_file:
+        stopw = json.load(data_file, strict=False)
+    for w in stopw:
+        if name.count(w) != 0:
+            return False
+    return True

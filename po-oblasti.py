@@ -139,7 +139,11 @@ def save_vak_to_json():
 # save_vak_to_json()
 with open('obl/firm-url-id.json', encoding='utf-8') as data_file:
     data_loaded = json.load(data_file, strict=False)
+
+all_vak = []
+iter_for_test = 0
 for firm_id, firm_name, firm_url, firm_num_vak in data_loaded:
+
     print(firm_id, firm_name)
     try:
         with open("obl/" + firm_id + ".json", "r", encoding="utf-8") as fh:
@@ -148,6 +152,41 @@ for firm_id, firm_name, firm_url, firm_num_vak in data_loaded:
     except:
         print('нет вакансий')
         pass
+    for vac in range(0, len(data['items'])):
+        if stop_dict(data['items'][vac]['name']):
+            if (data['items'][vac]['salary']) is None:
+                fr = ''
+                to = ''
+            else:
+                fr = data['items'][vac]['salary']['from']
+                to = data['items'][vac]['salary']['to']
+
+            tt = data['items'][vac]['published_at'][:10].split('-')
+            dt = tt[2] + '.' + tt[1] + '.' + tt[0]
+            vak_name = data['items'][vac]['name']
+            vak_resp = data['items'][vac]['snippet']['responsibility']
+            vak_req = data['items'][vac]['snippet']['requirement']
+            vak_url = data['items'][vac]['alternate_url']
+            #if (data['items'][vac]['address']) is None:
+            #    vak_metro = ''
+            #else:
+            print('--------------------------------------')
+            vak_metro = data['items'][vac]['address']
+            print(vak_metro)
+            print('--------------------------------------')
+            all_vak.append([firm_name, firm_url, vak_name, vak_resp, vak_req, vak_url, fr, to, dt, vak_metro])
+            print(firm_name, data['items'][vac]['name'], "|",
+                  data['items'][vac]['snippet']['responsibility'], "|", data['items'][vac]['snippet']['requirement'],
+                  "|", data['items'][vac]['alternate_url'], "|", fr, to, "|", dt)
+            iter_for_test = iter_for_test + 1
+            if iter_for_test > 50:
+                # print(all_vak)
+                print('fin')
+
+                # all_vak_p = pd.DataFrame(all_vak, columns=("ФИРМА", "URL", "ВАКАНСИЯ", "ОПИСАНИЕ", "ТРЕБОВАНИЯ", "URL", "ОТ", "ДО", "Дата"))
+                # all_vak_p.to_excel("obl/al-vak.xlsx")
+                exit(0)
+
 
 exit(0)
 
