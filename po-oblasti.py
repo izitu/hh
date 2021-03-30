@@ -137,6 +137,19 @@ def save_vak_to_json():
 
 # 4 Скачиваем все вакансии у всех фирм в json файлы
 # save_vak_to_json()
+
+
+
+with open("obl/1656044.json", "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+    vaks = data['items']
+
+print(len(vaks))
+
+for it in vaks:
+    print(it['id'])
+
+exit(0)
 with open('obl/firm-url-id.json', encoding='utf-8') as data_file:
     data_loaded = json.load(data_file, strict=False)
 
@@ -167,13 +180,14 @@ for firm_id, firm_name, firm_url, firm_num_vak in data_loaded:
             vak_resp = data['items'][vac]['snippet']['responsibility']
             vak_req = data['items'][vac]['snippet']['requirement']
             vak_url = data['items'][vac]['alternate_url']
-            #if (data['items'][vac]['address']) is None:
-            #    vak_metro = ''
-            #else:
-            print('--------------------------------------')
-            vak_metro = data['items'][vac]['address']
-            print(vak_metro)
-            print('--------------------------------------')
+            print(get())
+            # if (data['items'][vac]['address']['metro']['station_name']) is None:
+            #     vak_metro = ''
+            # else:
+            #     print('--------------------------------------')
+            #     vak_metro = data['items'][vac]['address']['metro']['station_name']
+            #     print(vak_metro)
+            #     print('--------------------------------------')
             all_vak.append([firm_name, firm_url, vak_name, vak_resp, vak_req, vak_url, fr, to, dt, vak_metro])
             print(firm_name, data['items'][vac]['name'], "|",
                   data['items'][vac]['snippet']['responsibility'], "|", data['items'][vac]['snippet']['requirement'],
