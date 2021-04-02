@@ -2,15 +2,13 @@
 # сначала собираем инфу по фирмам
 # потом смотрим все вакансии этих фирм и заносим в файлик
 # https://hh.ru/employers_company/medicina_farmacevtika_apteki?vacanciesRequired=true
-import requests
+
 import bs4
 import time
-import json
 import pandas as pd
-
-
 from vaktojsonfunc import *
 from tqdm import *
+
 
 def del_all_file():
     mypath = "obl"
@@ -122,37 +120,116 @@ def save_vak_to_json():
         print(firm_id, firm_name)
         api_to_file("obl", firm_id)
 
+
 # проверяем стопслова
 def stop_slo(name):
     if name == "Администратор":
         return True
-    with open('stop-dict.json', encoding='utf-8') as data_file:
-        stopw = json.load(data_file, strict=False)
-    for nu, slo in stopw.items():
+    if "Руководитель" in name:
+        return False
+    if "IT-специалист" in name:
+        return False
+    data_loaded = pd.read_excel("stop.xls", dtype=str)
+    # print(data_loaded)
+    for index, row in data_loaded.iterrows():
+        # print(row['KEY'])
+        slo = str(row['KEY'])
+        # flag = slo in name.lower()
+        # print(slo, "|", name.lower(), "|", flag)
         if slo in name.lower():
-            # print(f"{slo} => {name}")
+            print(f"{slo} => {name}")
             return True
     return False
 
+
+def sborka():
+    with open('obl/firm-url-id.json', encoding='utf-8') as data_file:
+        data_loaded = json.load(data_file, strict=False)
+
+    all_vak = []
+
+    for firm_id, firm_name, firm_url, firm_num_vak in tqdm(data_loaded):
+
+        print("\t", firm_id, firm_name)
+        try:
+            with open("obl/" + firm_id + ".json", "r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            # print(data)
+            vaks = data['items']
+        except:
+            # print('нет вакансий')
+            continue
+
+        for it in vaks:
+            # скипаем по названию вакансий
+            if stop_slo(it["name"]):
+                # "Есть  - скипаем"
+                continue
+            # скипаем по требованиям
+            if (it['snippet']['requirement'] is not None) and (stop_slo(it['snippet']['requirement'])):
+                continue
+            # print(it["id"], it["name"])
+            if it['salary'] is None:
+                fr = ''
+                to = ''
+            else:
+                fr = it['salary']['from']
+                to = it['salary']['to']
+                # нам не нужно до 75тыр
+                if (to is not None) and (int(to) < 75000):
+                    continue
+                # и если от 70 и пусто
+                if (fr is not None) and (to is None) and (int(fr) < 70000):
+                    continue
+            if it['address'] is None:
+                vak_metro = ''
+            else:
+                if it['address']['metro'] is None:
+                    vak_metro = ''
+                else:
+                    vak_metro = it['address']['metro']['station_name']
+                    # print(it['address']['metro']['station_name'])
+
+            tt = it['published_at'][:10].split('-')
+            dt = tt[2] + '.' + tt[1] + '.' + tt[0]
+            vak_name = it['name']
+            vak_resp = it['snippet']['responsibility']
+            vak_req = it['snippet']['requirement']
+            vak_url = it['alternate_url']
+            all_vak.append([firm_name, firm_url, vak_name, vak_resp, vak_req, vak_url, fr, to, dt, vak_metro])  #
+            # print(firm_name, it['name'], "|", it['snippet']['responsibility'], "|", it['snippet']['requirement'],
+            #      "|", it['alternate_url'], "|", fr, to, "|", dt)
+        all_vak_p = pd.DataFrame(all_vak, columns=(
+            "ФИРМА", "URL", "ВАКАНСИЯ", "ОПИСАНИЕ", "ТРЕБОВАНИЯ", "URL", "ОТ", "ДО", "Дата", "МЕТРО"))
+        all_vak_p.to_excel("obl/al-vak.xlsx")
+
+    # with open('stop-dict.json', encoding='utf-8') as data_file:
+    #    stopw = json.load(data_file, strict=False)
+    # for nu, slo in stopw.items():
+    #    if slo in name.lower():
+    #        # print(f"{slo} => {name}")
+    #        return True
+    # return False
+
+
 # -----------pandas.read_json("obl/firm-url-id.json").to_excel("obl/allfirms.xlsx")
 # -----------data_loaded = pandas.read_excel("obl/allfirms.xlsx")
-##### КОРОЧЕ РАБОТАТЬ С ЭКСЕЛЕМ ПРОЩЕ - НУ ВОТ ТАК
+# #### КОРОЧЕ РАБОТАТЬ С ЭКСЕЛЕМ ПРОЩЕ - НУ ВОТ ТАК
 # ----------------------------------------------------------------------------
 # 1 ПЕРЕГОНЯЕМ СЛОВАРЬ В ЭКСЕЛЬ
 # иногда нужно отредактировать в экселе и перегнать обратно
 # работать удобнее когда у тебя json
-with open('stop-dict.json', encoding='utf-8') as data_file:
-     stopw = json.load(data_file, strict=False)
+# with open('stop-dict.json', encoding='utf-8') as data_file:
+#     stopw = json.load(data_file, strict=False)
 # d = pd.read_json("stop-dict.json", index=['0'])#
-p = pd.DataFrame(stopw[1])
-
-p.to_excel("stop-dict.xls")
+# p = pd.DataFrame(stopw[1])
+# p.to_excel("stop-dict.xls")
 # 2 ПЕРЕГОНЯЕМ СЛОВАРЬ ИЗ ЭКСЕЛЯ В JSON
 # data_loaded = pd.read_excel("stop-dict.xls", dtype={'text': 'unicode'})
 # data_loaded[0].str.encode('utf-8')
 # with open(f"stop-dict.json", "w", encoding="utf-8") as fh:
 #    data_loaded[0].to_json("stop-dict.json", force_ascii=False, indent=4)
-exit(0)
+# exit(0)
 # файл json получается в win кодировке - приходится его конвертить
 # как сделать сразу -- не знаю :((
 # ----------------------------------------------------------------------------
@@ -169,120 +246,5 @@ exit(0)
 # 4 Скачиваем все вакансии у всех фирм в json файлы
 # save_vak_to_json()
 
-
-# with open("obl/1656044.json", "r", encoding="utf-8") as fh:
-#     data = json.load(fh)
-#     vaks = data['items']
-
-# print(len(vaks))
-with open('obl/firm-url-id.json', encoding='utf-8') as data_file:
-    data_loaded = json.load(data_file, strict=False)
-
-all_vak = []
-iter_for_test = 0
-for firm_id, firm_name, firm_url, firm_num_vak in tqdm(data_loaded):
-
-    print("\t", firm_id, firm_name)
-    try:
-        with open("obl/" + firm_id + ".json", "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-        # print(data)
-        vaks = data['items']
-    except:
-        # print('нет вакансий')
-        pass
-
-    for it in vaks:
-        if stop_slo(it["name"]):
-            # "Есть  - скипаем"
-            continue
-        # print(it["id"], it["name"])
-        if it['salary'] is None:
-            fr = ''
-            to = ''
-        else:
-            fr = it['salary']['from']
-            to = it['salary']['to']
-        if it['address'] is None:
-            vak_metro = ''
-        else:
-            if it['address']['metro'] is None:
-                vak_metro = ''
-            else:
-                vak_metro = it['address']['metro']['station_name']
-                # print(it['address']['metro']['station_name'])
-
-        tt = it['published_at'][:10].split('-')
-        dt = tt[2] + '.' + tt[1] + '.' + tt[0]
-        vak_name = it['name']
-        vak_resp = it['snippet']['responsibility']
-        vak_req = it['snippet']['requirement']
-        vak_url = it['alternate_url']
-        all_vak.append([firm_name, firm_url, vak_name, vak_resp, vak_req, vak_url, fr, to, dt, vak_metro]) #
-        # print(firm_name, it['name'], "|", it['snippet']['responsibility'], "|", it['snippet']['requirement'],
-        #      "|", it['alternate_url'], "|", fr, to, "|", dt)
-    all_vak_p = pd.DataFrame(all_vak, columns=("ФИРМА", "URL", "ВАКАНСИЯ", "ОПИСАНИЕ", "ТРЕБОВАНИЯ", "URL", "ОТ", "ДО", "Дата", "МЕТРО"))
-    all_vak_p.to_excel("obl/al-vak.xlsx")
-
-exit(0)
-with open('obl/firm-url-id.json', encoding='utf-8') as data_file:
-    data_loaded = json.load(data_file, strict=False)
-
-all_vak = []
-iter_for_test = 0
-for firm_id, firm_name, firm_url, firm_num_vak in data_loaded:
-
-    print(firm_id, firm_name)
-    try:
-        with open("obl/" + firm_id + ".json", "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-        # print(data)
-    except:
-        print('нет вакансий')
-        pass
-    for vac in range(0, len(data['items'])):
-        if stop_dict(data['items'][vac]['name']):
-            if (data['items'][vac]['salary']) is None:
-                fr = ''
-                to = ''
-            else:
-                fr = data['items'][vac]['salary']['from']
-                to = data['items'][vac]['salary']['to']
-
-            tt = data['items'][vac]['published_at'][:10].split('-')
-            dt = tt[2] + '.' + tt[1] + '.' + tt[0]
-            vak_name = data['items'][vac]['name']
-            vak_resp = data['items'][vac]['snippet']['responsibility']
-            vak_req = data['items'][vac]['snippet']['requirement']
-            vak_url = data['items'][vac]['alternate_url']
-            # print(get())
-            # if (data['items'][vac]['address']['metro']['station_name']) is None:
-            #     vak_metro = ''
-            # else:
-            #     print('--------------------------------------')
-            #     vak_metro = data['items'][vac]['address']['metro']['station_name']
-            #     print(vak_metro)
-            #     print('--------------------------------------')
-            all_vak.append([firm_name, firm_url, vak_name, vak_resp, vak_req, vak_url, fr, to, dt, vak_metro])
-            print(firm_name, data['items'][vac]['name'], "|",
-                  data['items'][vac]['snippet']['responsibility'], "|", data['items'][vac]['snippet']['requirement'],
-                  "|", data['items'][vac]['alternate_url'], "|", fr, to, "|", dt)
-            iter_for_test = iter_for_test + 1
-            if iter_for_test > 50:
-                # print(all_vak)
-                print('fin')
-
-                # all_vak_p = pd.DataFrame(all_vak, columns=("ФИРМА", "URL", "ВАКАНСИЯ", "ОПИСАНИЕ", "ТРЕБОВАНИЯ", "URL", "ОТ", "ДО", "Дата"))
-                # all_vak_p.to_excel("obl/al-vak.xlsx")
-                exit(0)
-
-
-exit(0)
-
-sleeptime = random.uniform(2, 5)
-print("sleeping for:", sleeptime, "seconds")
-sleep(sleeptime)
-
-json_file = {'name': ["aparna", "pankaj", "sudhir", "Geeku"], 'degree': ["MBA", "BCA", "M.Tech", "MBA"],
-             'score': [90, 40, 80, 98]}
-pd.DataFrame(json_file).to_excel("excel.xlsx")
+# 5 Сборка из json-ов в один эксельный файл
+sborka()
