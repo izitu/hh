@@ -11,8 +11,8 @@ def api_to_file(save_dir, api):
         try:
             data = (
                 requests.get("https://api.hh.ru/vacancies?employer_id=" + api + "&area=1").json())
-            sleep_time = random.uniform(2, 5)
-            print("sleeping for:", sleep_time, "seconds")
+            sleep_time = random.uniform(2, 4)
+            print("sleeping for:", sleep_time, " seconds")
             sleep(sleep_time)
 
             try:
