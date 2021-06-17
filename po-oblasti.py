@@ -8,23 +8,25 @@ import time
 import pandas as pd
 from vaktojsonfunc import *
 from tqdm import *
+from fake_useragent import UserAgent
+
 
 # ########## выбрать отрасль можно здесь https://hh.ru/employers_company
 # it сфера
-trig = "obr"
+trig = "it"
 # "med"
 if trig == "obr":
     base_dir = "obr"
-    base_url = "https://hh.ru/employers_company/obrazovatelnye_uchrezhdeniya?vacanciesRequired=true"
+    base_url = "https://hh.ru/employers_company/obrazovatelnye_uchrezhdeniya?areaId=1&vacanciesRequired=true"
 if trig == "med":
     base_dir = "med"
-    base_url = "https://hh.ru/employers_company/medicina_farmacevtika_apteki?vacanciesRequired=true"
+    base_url = "https://hh.ru/employers_company/medicina_farmacevtika_apteki?areaId=1&vacanciesRequired=true"
 if trig == "energy":
     base_dir = "energy"
-    base_url = "https://hh.ru/employers_company/energetika?vacanciesRequired=true"
+    base_url = "https://hh.ru/employers_company/energetika?areaId=1&vacanciesRequired=true"
 if trig == "it":
     base_dir = "its"
-    base_url = "https://hh.ru/employers_list?areaId=113"
+    base_url = "https://hh.ru/employers_company/informacionnye_tekhnologii_sistemnaya_integraciya_internet?areaId=1&vacanciesRequired=true&customDomain=1" # "https://hh.ru/employers_list?areaId=1&customDomain=1"
 
 
 # медицина
@@ -42,9 +44,12 @@ def webtofile():
     # сохраняем в файл нашу страницу
     # open_vak = "?vacanciesRequired=true"
     #
-    print(f"Сохраняем все фирмы с вакансиями в it.сфере \n{base_url}")
+    print(f"Сохраняем все фирмы с вакансиями в сфере {trig} \n{base_url}")
+    # hd = UserAgent().chrome
+    # print(hd)
+    # exit(0)
     headers = {'accept': '*/*',
-               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0'}
+               'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1309.0 Safari/537.17'}
     session = requests.Session()
     s0 = session.get(base_url, headers=headers)
     b = bs4.BeautifulSoup(s0.text, "html.parser")
@@ -59,6 +64,7 @@ def webtofile():
         print('продолжаем')
     else:
         print('других страниц нет - выход')
+        print(b)
         exit(1)
     # если нет -- значит список пуст
     print(fnum[-1].get('href'))
@@ -112,7 +118,8 @@ def wr_to_file():
         s1 = open_raw.read()
         b = bs4.BeautifulSoup(s1, "html.parser")
         open_raw.close()
-        firm_url_on_page = b.find_all('div', class_='employers-company__item')  # span - employers-company__description
+        firm_url_on_page = b.find_all('div', class_='employers-company__item')  # b.find_all span - employers-company__description # div employers-company__item
+        # firm_url_on_page = firm_url_on_page.find_all('div')
 
         for firm in firm_url_on_page:
             it = firm.find('a')
